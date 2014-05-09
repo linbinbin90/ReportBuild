@@ -3,6 +3,12 @@ __author__ = 'linbinbin'
 import mysql.connector
 from mysql.connector import errorcode
 
+# sql = DB_helper("root", "900129lbb", "127.0.0.1", "LKQCar")
+#
+# brand_name = "toyota"
+# model_name = "camry"
+# model_year = "2007"
+# part_title = "hood123213"
 
 class DB_helper:
     def __init__(self, user, password, host, database):
@@ -86,6 +92,39 @@ class DB_helper:
             print err
         finally:
             return years
+
+    def query_models(self, brand_name):
+        query = (
+            "SELECT distinct m.name "
+            "FROM LKQCar.brand b "
+            "INNER JOIN LKQCar.model m "
+            "ON b.brand_id = m.brand_id "
+            "where b.name = (%s)"
+        )
+        models = []
+        try:
+            self.cur.execute(query, (brand_name,))
+            for (model) in self.cur:
+                models.append(model[0])
+        except mysql.connector.Error as err:
+            print err
+        finally:
+            return models
+
+    def query_brands(self):
+        query = (
+            "SELECT distinct b.name "
+            "FROM LKQCar.brand b"
+        )
+        brands = []
+        try:
+            self.cur.execute(query)
+            for (brand) in self.cur:
+                brands.append(brand[0])
+        except mysql.connector.Error as err:
+            print err
+        finally:
+            return brands
 
     def __del__(self):
         self.cur.close();
