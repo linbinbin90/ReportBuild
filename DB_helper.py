@@ -26,7 +26,7 @@ class DB_helper:
         finally:
             print "connect to database successfully"
 
-    def query_price(self, brand_name, model_name, model_year, part_title):
+    def query_price(self, brand_name, website_type, model_name, model_year, part_title):
         query = (
             "SELECT round(avg(p.orignial_price), 2) "
             "FROM LKQCar.part p "
@@ -36,12 +36,14 @@ class DB_helper:
             "ON pms.model_id = m.model_id "
             "INNER JOIN LKQCar.brand b "
             "ON b.brand_id = m.brand_id "
-            "where b.name = (%s) and m.name = (%s) and m.year = (%s) and p.part_title = (%s) "
+            "INNER JOIN LKQCar.website w "
+            "ON w.site_id = p.website_id "
+            "where b.name = (%s) and w.type = (%s) and m.name = (%s) and m.year = (%s) and p.part_title = (%s)  "
             "group by p.part_title"
         )
         avg_price = 0
         try:
-            self.cur.execute(query, (brand_name, model_name, model_year, part_title))
+            self.cur.execute(query, (brand_name, website_type, model_name, model_year, part_title))
             for (price) in self.cur:
                 avg_price = price[0]
         except mysql.connector.Error as err:
@@ -49,7 +51,7 @@ class DB_helper:
         finally:
             return avg_price
 
-    def query_parts(self, brand_name, model_name):
+    def query_parts(self, brand_name, website_type, model_name):
         query = (
             "SELECT distinct p.part_title "
             "FROM LKQCar.part p "
@@ -59,11 +61,13 @@ class DB_helper:
             "ON pms.model_id = m.model_id "
             "INNER JOIN LKQCar.brand b "
             "ON b.brand_id = m.brand_id "
-            "where b.name = (%s) and m.name = (%s)"
+            "INNER JOIN LKQCar.website w "
+            "ON w.site_id = p.website_id "
+            "where b.name = (%s) and w.type = (%s) and m.name = (%s) "
         )
         parts = []
         try:
-            self.cur.execute(query, (brand_name, model_name))
+            self.cur.execute(query, (brand_name, website_type, model_name))
             for (part) in self.cur:
                 parts.append(part[0])
         except mysql.connector.Error as err:
@@ -71,7 +75,7 @@ class DB_helper:
         finally:
             return parts
 
-    def query_years(self, brand_name, model_name):
+    def query_years(self, brand_name, website_type, model_name):
         query = (
             "SELECT distinct m.year "
             "FROM LKQCar.part p "
@@ -81,11 +85,13 @@ class DB_helper:
             "ON pms.model_id = m.model_id "
             "INNER JOIN LKQCar.brand b "
             "ON b.brand_id = m.brand_id "
-            "where b.name = (%s) and m.name = (%s)"
+            "INNER JOIN LKQCar.website w "
+            "ON w.site_id = p.website_id "
+            "where b.name = (%s) and w.type = (%s) and m.name = (%s)"
         )
         years = []
         try:
-            self.cur.execute(query, (brand_name, model_name))
+            self.cur.execute(query, (brand_name, website_type, model_name))
             for (year) in self.cur:
                 years.append(year[0])
         except mysql.connector.Error as err:
@@ -96,10 +102,16 @@ class DB_helper:
     def query_models(self, brand_name):
         query = (
             "SELECT distinct m.name "
-            "FROM LKQCar.brand b "
+            "FROM LKQCar.part p "
+            "INNER JOIN LKQCar.part_model_spot pms "
+            "ON p.part_id = pms.part_id "
             "INNER JOIN LKQCar.model m "
+            "ON pms.model_id = m.model_id "
+            "INNER JOIN LKQCar.brand b "
             "ON b.brand_id = m.brand_id "
-            "where b.name = (%s)"
+            "INNER JOIN LKQCar.website w "
+            "ON w.site_id = p.website_id "
+            "where b.name = (%s) "
         )
         models = []
         try:
@@ -110,6 +122,30 @@ class DB_helper:
             print err
         finally:
             return models
+
+    def query_websites(self, brand_name, model_name):
+        query = (
+            "SELECT distinct w.type "
+            "FROM LKQCar.part p "
+            "INNER JOIN LKQCar.part_model_spot pms "
+            "ON p.part_id = pms.part_id "
+            "INNER JOIN LKQCar.model m "
+            "ON pms.model_id = m.model_id "
+            "INNER JOIN LKQCar.brand b "
+            "ON b.brand_id = m.brand_id "
+            "INNER JOIN LKQCar.website w "
+            "ON w.site_id = p.website_id "
+            "where b.name = (%s) and m.name = (%s)"
+        )
+        websites = []
+        try:
+            self.cur.execute(query, (brand_name, model_name))
+            for (website) in self.cur:
+                websites.append(website[0])
+        except mysql.Error as err:
+            print err
+        finally:
+            return websites
 
     def query_brands(self):
         query = (
