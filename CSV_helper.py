@@ -31,3 +31,22 @@ class CSV_helper:
                     for c, col in enumerate(row):
                         ws.write(r, c, col)
             wb.save('LKQ_Report.xls')
+
+    #just for creating table to olivia
+    def read_csv(self, filename):
+        list = []
+        file = open(filename, "rU")
+        csv_reader = csv.reader(file, delimiter=',')
+        rownum = 0
+        for row in csv_reader:
+            # Save header row.
+            if rownum == 0:
+                header = row
+                # print header
+            else:
+                words = row[1].split()
+                if(len(words) >= 3):
+                    list.append([words[0], words[1], words[2]])
+            rownum += 1
+        file.close()
+        return list
