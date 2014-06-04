@@ -1,0 +1,3 @@
+According the requirement customer given, there should be one more field in table website, the name should be "Type",
+There are 4 types of website: LKQ, OEM, Alternative and Recycled
+The code can't run without error until you add the field described above.
